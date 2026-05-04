@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>AegisAI</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    width: 360px;
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    color: #111827;
+    background: #f9fafb;
+  }
+  header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    color: #fff;
+    padding: 14px 16px;
+  }
+  header .name { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
+  header .tag  { font-size: 11px; opacity: .8; }
+
+  .section {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .section h2 {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: #6b7280;
+  }
+
+  .status {
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-weight: 500;
+  }
+  .status.safe     { background:#dcfce7; color:#14532d; }
+  .status.warn     { background:#fef3c7; color:#78350f; }
+  .status.blocked,
+  .status.phishing { background:#fee2e2; color:#7f1d1d; }
+  .status.muted    { background:#f3f4f6; color:#374151; }
+  .status .reason  { font-size: 11px; opacity:.85; margin-top: 4px; font-weight: 400; }
+
+  .row { display: flex; gap: 6px; }
+  input[type=text] {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+  }
+  input[type=text]:focus { border-color: #2563eb; }
+
+  button {
+    cursor: pointer;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #2563eb;
+    color: #fff;
+    transition: opacity .15s;
+  }
+  button:hover { opacity: .9; }
+  button.ghost { background: #f3f4f6; color:#111827; border:1px solid #e5e7eb; }
+  button.danger { background: #ef4444; }
+
+  ul.list { list-style: none; margin: 8px 0 0; padding: 0; max-height: 180px; overflow-y: auto; }
+  ul.list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 6px;
+  }
+  ul.list li:nth-child(odd) { background:#f9fafb; }
+  ul.list li .domain {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+  ul.list li button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .empty { color:#6b7280; font-style: italic; padding: 6px 0; font-size: 12px; }
+
+  .logs-list { max-height: 200px; }
+  .log-entry { gap: 6px; padding: 5px 8px; cursor: default; }
+  .log-entry:hover { background: #f0f9ff; }
+  .log-icon { font-size: 12px; flex-shrink: 0; }
+  .log-domain { font-family: ui-monospace, Menlo, monospace; font-size: 11px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-time { font-size: 10px; color: #9ca3af; flex-shrink: 0; }
+
+  .content-result { padding: 8px 10px; border-radius: 8px; font-size: 12px; line-height: 1.5; }
+  .content-result.clean   { background: #f0fdf4; color: #14532d; }
+  .content-result.flagged { background: #fff7ed; color: #7c2d12; }
+  .content-result.pending { background: #f3f4f6; color: #6b7280; }
+  .content-result .cf-title { font-weight: 600; margin-bottom: 4px; }
+  .content-flags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .content-flag { padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 600; background: rgba(0,0,0,.08); }
+
+  .toast {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="name">🛡️ AegisAI</div>
+    <div class="tag">Smart web security</div>
+  </header>
+
+  <!-- Current tab status -->
+  <div class="section">
+    <h2>Current Tab</h2>
+    <div id="currentStatus" class="status muted">Checking…</div>
+  </div>
+
+  <!-- Content analysis -->
+  <div class="section">
+    <h2>Content Analysis</h2>
+    <div id="contentResult" class="content-result pending">
+      <div class="cf-title">Analysing page content…</div>
+    </div>
+  </div>
+
+  <!-- Add domain -->
+  <div class="section">
+    <h2>Block a Domain</h2>
+    <div class="row">
+      <input id="domainInput" type="text" placeholder="example.com" />
+      <button id="addBtn">Add</button>
+    </div>
+  </div>
+
+  <!-- Blocked list -->
+  <div class="section">
+    <h2>Blocklist</h2>
+    <ul id="blocklist" class="list"></ul>
+    <div id="blocklistEmpty" class="empty" style="display:none;">No domains blocked yet.</div>
+  </div>
+
+  <!-- Recent activity log -->
+  <div class="section">
+    <h2>Recent Activity</h2>
+    <ul id="logsList" class="list logs-list"></ul>
+    <div id="logsEmpty" class="empty" style="display:none;">No recent checks.</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="../scripts/config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

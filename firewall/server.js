@@ -1,24 +1,36 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const extractFeatures = require("./featureExtractor");
+
+const extractURL = require("./urlExtractor");
 const analyze = require("./aiClient");
+const decide = require("./decisionEngine");
+const log = require("./logger");
 
 const app = express();
 
-// MAIN FIREWALL LOGIC
+// FIREWALL LAYER
 app.use(async (req, res, next) => {
     try {
-        const features = extractFeatures(req);
+        const url = extractURL(req);
 
-        const result = await analyze(features);
+        const aiResult = await analyze(url);
 
-        if (result.status === "unsafe") {
+        const decision = decide(aiResult);
+
+        log({
+            url,
+            aiResult,
+            decision,
+            timestamp: Date.now()
+        });
+
+        if (decision === "unsafe") {
             return res.status(403).send("Blocked by Aegis Firewall");
         }
 
-        if (result.status === "flagged") {
-            console.log("FLAGGED TRAFFIC:", features);
-            // allow temporarily (or block depending on policy)
+        if (decision === "flagged") {
+            console.log("⚠️ FLAGGED:", url);
+            // allow for now (can add admin approval later)
         }
 
         next();
@@ -29,10 +41,13 @@ app.use(async (req, res, next) => {
     }
 });
 
-// PROXY TRAFFIC FORWARD
+// PROXY (dynamic routing)
 app.use("/", createProxyMiddleware({
-    target: "http://example.com", // dynamic later
-    changeOrigin: true
+    target: "http://example.com", // keep for now, improve later
+    changeOrigin: true,
+    router: (req) => {
+        return `http://${req.headers.host}`;
+    }
 }));
 
 app.listen(4000, () => {

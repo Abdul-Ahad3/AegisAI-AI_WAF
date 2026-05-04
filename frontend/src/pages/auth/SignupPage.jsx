@@ -95,19 +95,6 @@ const SignupPage = () => {
                         />
                     </div>
 
-                    <div style={{ gridColumn: 'span 2' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Role</label>
-                        <select
-                            className="glass-panel"
-                            style={{ width: '100%', padding: '0.8rem', color: 'var(--text-primary)', boxSizing: 'border-box', background: 'transparent' }}
-                            value={formData.role}
-                            onChange={e => setFormData({ ...formData, role: e.target.value })}
-                        >
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-
                     <button type="submit" className="btn-primary" style={{ gridColumn: 'span 2', marginTop: '1rem' }}>Sign Up</button>
                 </form>
 

@@ -74,3 +74,15 @@ exports.removePeer = async (id) => {
         execSync(`wg syncconf wg0 ${stripPath}`);
     }
 };
+
+// Start WireGuard
+exports.startVPN = () => {
+    execSync("wg-quick up wg0");
+    console.log("WireGuard started");
+};
+
+// Stop WireGuard
+exports.stopVPN = () => {
+    execSync("wg-quick down wg0");
+    console.log("WireGuard stopped");
+};

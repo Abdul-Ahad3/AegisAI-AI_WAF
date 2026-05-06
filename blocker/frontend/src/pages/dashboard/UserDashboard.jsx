@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 const UserDashboard = () => {
     const { user } = useAuth();
     const [logs, setLogs] = useState([]);
+    const [firewallEnabled, setFirewallEnabled] = useState(false);
 
     useEffect(() => {
         fetch('http://localhost:5000/api/logs?limit=50')
@@ -15,6 +16,10 @@ const UserDashboard = () => {
             })
             .catch(err => console.error('Failed to fetch logs:', err));
     }, []);
+
+    const toggleFirewall = () => {
+        setFirewallEnabled(prev => !prev);
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -37,6 +42,25 @@ const UserDashboard = () => {
                     Role: <span style={{ textTransform: 'uppercase' }}>{user?.role}</span>
                 </div>
             </div>
+
+            <button
+                type="button"
+                onClick={toggleFirewall}
+                style={{
+                    marginTop: '1.5rem',
+                    padding: '1.25rem 2rem',
+                    borderRadius: '9px',
+                    border: 'none',
+                    background: firewallEnabled ? '#2563eb' : '#d8421d',
+                    color: '#ffffff',
+                    cursor: 'pointer',
+                    fontWeight: '700',
+                    fontSize: '3.25rem',
+                    letterSpacing: '0.03em'
+                }}
+            >
+                {firewallEnabled ? 'Enable Firewall' : 'Disable Firewall'}
+            </button>
 
             <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
                 <h2 style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>Site Access Analytics</h2>

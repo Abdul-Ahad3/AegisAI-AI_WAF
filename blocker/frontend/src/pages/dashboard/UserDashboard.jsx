@@ -17,8 +17,23 @@ const UserDashboard = () => {
             .catch(err => console.error('Failed to fetch logs:', err));
     }, []);
 
-    const toggleFirewall = () => {
-        setFirewallEnabled(prev => !prev);
+    const toggleFirewall = async () => {
+        const newState = !firewallEnabled;
+        try {
+            const response = await fetch(`http://localhost:3000/security/${newState ? 'enable' : 'disable'}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                setFirewallEnabled(newState);
+            } else {
+                console.error('Failed to toggle firewall');
+            }
+        } catch (error) {
+            console.error('Error toggling firewall:', error);
+        }
     };
 
     const getStatusColor = (status) => {

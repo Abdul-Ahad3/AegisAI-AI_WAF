@@ -66,7 +66,7 @@ const UserDashboard = () => {
                     padding: '1.25rem 2rem',
                     borderRadius: '9px',
                     border: 'none',
-                    background: firewallEnabled ? '#2563eb' : '#d8421d',
+                    background: firewallEnabled ? '#dc2626' : '#2563eb',
                     color: '#ffffff',
                     cursor: 'pointer',
                     fontWeight: '700',
@@ -74,7 +74,7 @@ const UserDashboard = () => {
                     letterSpacing: '0.03em'
                 }}
             >
-                {firewallEnabled ? 'Enable Firewall' : 'Disable Firewall'}
+                {firewallEnabled ? 'Disable Firewall' : 'Enable Firewall'}
             </button>
 
             <div className="glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
